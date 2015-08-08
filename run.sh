@@ -15,7 +15,7 @@ run() {
 	# autospawn= Autospawn a PulseAudio daemon when needed.
 	#
 	touch $HOME_CONFIG_CLIENT_CONF
-	grep $AUTOSPAWN_NO $HOME_CONFIG_CLIENT_CONF
+	grep "$AUTOSPAWN_NO" $HOME_CONFIG_CLIENT_CONF
 	if [ "$?" != "0" ]; then
 		echo "autospawn=no" >> $HOME_CONFIG_CLIENT_CONF
 	fi
