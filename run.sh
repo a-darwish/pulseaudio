@@ -5,9 +5,11 @@
 #
 
 LOG_DIR=build/logs
-PA=build/src/pulseaudio
-AUTOSPAWN_NO=' *autospawn *= *no *'
 HOME_CONFIG_CLIENT_CONF=$HOME/.pulse/client.conf
+AUTOSPAWN_NO=' *autospawn *= *no *'
+
+PA=build/src/pulseaudio
+PA_FLAGS="-n -F build/src/default.pa -p $(pwd)/build/src/.libs/ -vvvv"
 
 run() {
 	#
@@ -26,7 +28,7 @@ run() {
 		kill $PULSE_PID
 	fi
 
-	$PA -n -F build/src/default.pa -p $(pwd)/build/src/.libs/ -vvvv;
+	$PA $PA_FLAGS
 }
 
 #
