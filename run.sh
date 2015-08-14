@@ -9,7 +9,7 @@ HOME_CONFIG_CLIENT_CONF=$HOME/.pulse/client.conf
 AUTOSPAWN_NO=' *autospawn *= *no *'
 
 PA=build/src/pulseaudio
-PA_FLAGS="-n -F build/src/default.pa -p $(pwd)/build/src/.libs/ -vvvv"
+PA_FLAGS="-n -F build/src/default.pa -p $(pwd)/build/src/ -vvvv"
 
 run() {
 	#
