@@ -3059,12 +3059,21 @@ char *pa_machine_id(void) {
     /* The returned value is supposed be some kind of ascii identifier
      * that is unique and stable across reboots. */
 
-    /* First we try the /etc/machine-id, which is the best option we
-     * have, since it fits perfectly our needs and is not as volatile
+    /* First we try ${sysconfdir}/etc/machine-id, with fallbacks to
+     * ${localstatedir}/lib/dbus/machine-id, /etc/machine-id and
+     * /var/lib/dbus/machine-id, which are the best option we
+     * have, since they fit perfectly our needs and are not as volatile
      * as the hostname which might be set from dhcp. */
 
     if ((f = pa_fopen_cloexec(PA_MACHINE_ID, "r")) ||
-        (f = pa_fopen_cloexec(PA_MACHINE_ID_FALLBACK, "r"))) {
+        (f = pa_fopen_cloexec(PA_MACHINE_ID_FALLBACK, "r")) ||
+#if !defined(OS_IS_WIN32)
+        (f = pa_fopen_cloexec("/etc/machine-id", "r")) ||
+        (f = pa_fopen_cloexec("/var/lib/dbus/machine-id", "r"))
+#else
+        false
+#endif
+        ) {
         char ln[34] = "", *r;
 
         r = fgets(ln, sizeof(ln)-1, f);
@@ -3192,7 +3201,7 @@ char *pa_replace(const char*s, const char*a, const char *b) {
 
     pa_strbuf_puts(sb, s);
 
-    return pa_strbuf_tostring_free(sb);
+    return pa_strbuf_to_string_free(sb);
 }
 
 char *pa_escape(const char *p, const char *chars) {
@@ -3214,7 +3223,7 @@ char *pa_escape(const char *p, const char *chars) {
         pa_strbuf_putc(buf, *s);
     }
 
-    return pa_strbuf_tostring_free(buf);
+    return pa_strbuf_to_string_free(buf);
 }
 
 char *pa_unescape(char *p) {
