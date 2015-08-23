@@ -10,13 +10,12 @@
 #	http://colin.guthr.ie/2010/09/compiling-and-running-pulseaudio-from-git/
 #
 
-LOG_DIR=build/logs
+LOG_DIR=logs
 
 build() {
     NOCONFIGURE=true ./bootstrap.sh -V
 
-    cd build
-    ../configure --prefix=$(pwd)
+    ./configure --prefix=$(pwd)
 
     #
     # "Due to an intltool upstream bug, the translations for
@@ -34,7 +33,5 @@ build() {
     ln -s pacat src/parec
 }
 
-rm -fr build
-mkdir -p build
 mkdir -p $LOG_DIR
 build 2>&1 | tee $LOG_DIR/BUILD_LOG.txt

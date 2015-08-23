@@ -4,13 +4,13 @@
 # Read and run the contents of `build.sh' script first!
 #
 
-LOG_DIR=build/logs
+LOG_DIR=logs
 HOME_CONFIG_CLIENT_CONF=$HOME/.pulse/client.conf
 AUTOSPAWN_NO=' *autospawn *= *no *'
 
 #
-# Even while PA modules actually exist under `build/src/.libs'
-# instead of just `build/src', specificy the latter as the DL
+# Even while PA modules actually exist under `src/.libs'
+# instead of just `src', specificy the latter as the DL
 # search path.
 #
 # Per the libtool documentation, libtool already adds the
@@ -18,11 +18,11 @@ AUTOSPAWN_NO=' *autospawn *= *no *'
 # the source repository.
 #
 # It does this by applying some Unix trickery and by making
-# `build/src/pulseaudio' actually a shell script wrapper
-# around the real PA existing at `build/src/.libs/pulseaudio'!
+# `src/pulseaudio' actually a shell script wrapper
+# around the real PA existing at `src/.libs/pulseaudio'!
 #
-PA=build/src/pulseaudio
-PA_FLAGS="-n -F build/src/default.pa -p $(pwd)/build/src/ -vvvv"
+PA=src/pulseaudio
+PA_FLAGS="-n -F src/default.pa -p $(pwd)/src/ -vvvv"
 
 run() {
 	#
@@ -54,4 +54,4 @@ if [ ! -x $PA ]; then
 	exit -1
 fi
 
-run 2>&1 | tee $LOG_DIR/RUN_LOG.txt
+run 2>&1 #| tee $LOG_DIR/RUN_LOG.txt
