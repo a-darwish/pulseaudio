@@ -184,7 +184,8 @@ bin_SCRIPTS = esdcompat
 
 bin_PROGRAMS += \
 		pacat \
-		pactl
+		pactl \
+		patest
 
 if !OS_IS_WIN32
 bin_PROGRAMS += pasuspender
@@ -208,6 +209,11 @@ pactl_SOURCES = utils/pactl.c
 pactl_LDADD = $(AM_LDADD) libpulse.la libpulsecommon-@PA_MAJORMINOR@.la $(LIBSNDFILE_LIBS)
 pactl_CFLAGS = $(AM_CFLAGS) $(LIBSNDFILE_CFLAGS)
 pactl_LDFLAGS = $(AM_LDFLAGS) $(BINLDFLAGS)
+
+patest_SOURCES=utils/patest.c
+patest_CFLAGS = $(AM_CFLAGS)
+patest_LDADD = $(AM_LDADD) libpulse.la libpulsecommon-@PA_MAJORMINOR@.la
+patest_LDFLAGS = $(AM_LDFLAGS) $(BINLDFLAGS)
 
 pasuspender_SOURCES = utils/pasuspender.c
 pasuspender_LDADD = $(AM_LDADD) libpulse.la libpulsecommon-@PA_MAJORMINOR@.la
