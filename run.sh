@@ -41,7 +41,7 @@ run() {
 		kill $PULSE_PID
 	fi
 
-	$PA $PA_FLAGS
+	PULSE_LOG=99 PULSE_LOG_COLORS= PULSE_LOG_META= $PA $PA_FLAGS
 }
 
 #
@@ -54,4 +54,11 @@ if [ ! -x $PA ]; then
 	exit -1
 fi
 
-run 2>&1 #| tee $LOG_DIR/RUN_LOG.txt
+#
+# Log the output only if we were asked to
+#
+if [ ! -z ${LOG_OUTPUT+x} ]; then
+    run 2>&1 | tee $LOG_DIR/RUN_LOG.txt
+else
+    run 2>&1
+fi
