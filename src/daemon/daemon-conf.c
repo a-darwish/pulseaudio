@@ -153,7 +153,9 @@ pa_daemon_conf *pa_daemon_conf_new(void) {
                                           pa_win32_get_toplevel(NULL), PA_MAJOR, PA_MINOR);
 #else
     if (pa_run_from_build_tree()) {
+        pa_log_notice("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         pa_log_notice("Detected that we are run from the build tree, fixing search path.");
+        pa_log_notice("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         c->dl_search_path = pa_xstrdup(PA_BUILDDIR);
     } else
         c->dl_search_path = pa_xstrdup(PA_DLSEARCHPATH);

@@ -39,6 +39,7 @@
 #endif
 
 #ifdef HAVE_SYSTEMD_JOURNAL
+#define SD_JOURNAL_SUPPRESS_LOCATION
 #include <systemd/sd-journal.h>
 #endif
 
@@ -296,6 +297,7 @@ static void init_defaults(void) {
 
 #ifdef HAVE_SYSTEMD_JOURNAL
         if (getenv(ENV_LOG_JOURNAL)) {
+            fprintf(stderr, "******************* SETTING OUTPUT TO SYSTEMD JOURNAL\n");
             target_override = PA_LOG_JOURNAL;
             target_override_set = true;
         }
@@ -352,7 +354,7 @@ static void log_syslog(pa_log_level_t level, char *t, char *timestamp, char *loc
     if ((local_t = pa_utf8_to_locale(t)))
         t = local_t;
 
-    syslog(level_to_syslog[level], "%s%s%s%s", timestamp, location, t, pa_strempty(bt));
+    syslog(level_to_syslog[level], "%s%s%s%s", timestamp, pa_strempty(location), t, pa_strempty(bt));
     pa_xfree(local_t);
 }
 #endif
@@ -366,7 +368,7 @@ void pa_log_levelv_meta(
         va_list ap) {
 
     char *t, *n;
-    int saved_errno = errno;
+    int saved_errno = errno, ret;
     char *bt = NULL;
     pa_log_target_type_t _target;
     pa_log_level_t _maximum_level;
@@ -375,7 +377,7 @@ void pa_log_levelv_meta(
 
     /* We don't use dynamic memory allocation here to minimize the hit
      * in RT threads */
-    char text[16*1024], location[128], timestamp[32];
+    char text[16*1024], location[128], timestamp[32], error_msg[120];
 
     pa_assert(level < PA_LOG_LEVEL_MAX);
     pa_assert(format);
@@ -451,6 +453,7 @@ void pa_log_levelv_meta(
         switch (_target) {
 
             case PA_LOG_STDERR: {
+                fprintf(stderr, "*********** STDERR\n");
                 const char *prefix = "", *suffix = "", *grey = "";
                 char *local_t;
 
@@ -490,30 +493,37 @@ void pa_log_levelv_meta(
 
 #ifdef HAVE_SYSLOG_H
             case PA_LOG_SYSLOG:
+                fprintf(stderr, "*********** SYSLOG\n");
                 log_syslog(level, t, timestamp, location, bt);
                 break;
 #endif
 
 #ifdef HAVE_SYSTEMD_JOURNAL
             case PA_LOG_JOURNAL:
-                if (sd_journal_send("MESSAGE=%s", t,
+                fprintf(stderr, "*********** JOURNAL\n");
+                if ((ret = sd_journal_send("MESSAGE=%s", t,
                                 "PRIORITY=%i", level_to_journal[level],
                                 "CODE_FILE=%s", file,
                                 "CODE_FUNC=%s", func,
                                 "CODE_LINE=%d", line,
                                 "PULSE_BACKTRACE=%s", pa_strempty(bt),
-                                NULL) < 0) {
+                                NULL)) < 0) {
+                    pa_log_target new_target = { .file = NULL, };
+                    pa_snprintf(error_msg, sizeof(error_msg), "Error writing logs to journal. Reason: %s",
+                                pa_cstrerror(ret));
 #ifdef HAVE_SYSLOG_H
-                    pa_log_target new_target = { .type = PA_LOG_SYSLOG, .file = NULL };
+                    new_target.type = PA_LOG_SYSLOG;
 
-                    syslog(level_to_syslog[PA_LOG_ERROR], "%s%s%s", timestamp, __FILE__,
-                           "Error writing logs to the journal. Redirect log messages to syslog.");
                     log_syslog(level, t, timestamp, location, bt);
+                    log_syslog(PA_LOG_ERROR, error_msg, timestamp, NULL, NULL);
+                    log_syslog(PA_LOG_ERROR, (char *)"Redirect log messages to syslog.", timestamp, NULL, NULL);
 #else
-                    pa_log_target new_target = { .type = PA_LOG_STDERR, .file = NULL };
+                    new_target.type = PA_LOG_STDERR;
 
                     saved_errno = errno;
-                    fprintf(stderr, "%s\n", "Error writing logs to the journal. Redirect log messages to console.");
+                    fprintf(stderr, "%s%s%s%s\n", timestamp, location, t, bt);
+                    fprintf(stderr, "%s\n", error_msg);
+                    fprintf(stderr, "%s\n", "Redirect log messages to console.");
                     fprintf(stderr, "%s %s\n", metadata, t);
 #endif
                     pa_log_set_target(&new_target);
