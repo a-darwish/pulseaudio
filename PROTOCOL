@@ -383,6 +383,10 @@ Unless memfd support is compiled out or disabled by enable-memfd=no client
 option, clients now uses memfd SHM by default to transfer playback audio
 block references to the server.
 
+Unless memfd support is compiled out or disabled by enable-memfd=no server
+option, server now uses memfd SHM by default for its global core and rw
+srbchannel mempools.
+
 #### If you just changed the protocol, read this
 ## module-tunnel depends on the sink/source/sink-input/source-input protocol
 ## internals, so if you changed these, you might have broken module-tunnel.
