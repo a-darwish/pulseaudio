@@ -2585,6 +2585,7 @@ static void command_exit(pa_pdispatch *pd, uint32_t command, uint32_t tag, pa_ta
 }
 
 static void setup_srbchannel(pa_native_connection *c) {
+#ifdef HAVE_CREDS
     pa_srbchannel_template srbt;
     pa_srbchannel *srb;
     pa_memchunk mc;
@@ -2634,6 +2635,9 @@ static void setup_srbchannel(pa_native_connection *c) {
     pa_pstream_send_memblock(c->pstream, 0, 0, 0, &mc);
 
     c->srbpending = srb;
+#else
+    pa_log_debug("Disabling srbchannel, reason: No credentials-passing support");
+#endif
 }
 
 static void command_enable_srbchannel(pa_pdispatch *pd, uint32_t command, uint32_t tag, pa_tagstruct *t, void *userdata) {
