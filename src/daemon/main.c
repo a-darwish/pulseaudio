@@ -267,13 +267,15 @@ static int set_one_rlimit(const pa_rlimit *r, int resource, const char *name) {
     if (!r->is_set)
         return 0;
 
-    rl.rlim_cur = rl.rlim_max = r->value;
+    rl.rlim_cur = (r->is_soft_value_set) ? r->soft_value : r->value;
+    rl.rlim_max = r->value;
 
     if (setrlimit(resource, &rl) < 0) {
-        pa_log_info("setrlimit(%s, (%u, %u)) failed: %s", name, (unsigned) r->value, (unsigned) r->value, pa_cstrerror(errno));
+        pa_log_info("setrlimit(%s, (%u, %u)) failed: %s", name, (unsigned) rl.rlim_cur, (unsigned) rl.rlim_max, pa_cstrerror(errno));
         return -1;
     }
 
+    pa_log_debug("setrlimit(%s, (%u, %u))", name, (unsigned) rl.rlim_cur, (unsigned) rl.rlim_max);
     return 0;
 }
 
@@ -365,6 +367,19 @@ fail:
     return NULL;
 }
 #endif
+
+static void signal_handler(int sig) {
+    int saved_errno;
+
+    saved_errno = errno;
+    pa_assert(sig == SIGXCPU);
+
+    pa_log("************************************************************");
+    pa_log("************************************************************");
+    pa_log("*********************SIGXCPU HANDLER************************");
+    pa_log("************************************************************");
+    pa_log("************************************************************");
+}
 
 int main(int argc, char *argv[]) {
     pa_core *c = NULL;
@@ -894,6 +909,19 @@ int main(int argc, char *argv[]) {
     set_all_rlimits(conf);
 #endif
     pa_rtclock_hrtimer_enable();
+
+    pa_log("******** setting up sixcpu handler");
+    struct sigaction sa, sa_prev;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+
+    if (sigaction(SIGXCPU, &sa, &sa_prev) < 0) {
+        pa_cpu_limit_done();
+        return -1;
+    }
+    pa_log("******** done");
 
     if (conf->high_priority)
         pa_raise_priority(conf->nice_level);
