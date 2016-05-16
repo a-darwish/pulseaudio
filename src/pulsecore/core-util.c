@@ -3192,6 +3192,7 @@ char *pa_replace(const char*s, const char*a, const char *b) {
 
     pa_assert(s);
     pa_assert(a);
+    pa_assert(*a);
     pa_assert(b);
 
     an = strlen(a);
