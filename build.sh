@@ -15,7 +15,8 @@ LOG_DIR=logs
 build() {
     NOCONFIGURE=true ./bootstrap.sh -V
 
-    ./configure --prefix=$(pwd)
+#   CFLAGS="-ggdb3 -O0" LDFLAGS="-ggdb3" ./configure --prefix=$(pwd) --enable-tests
+  ./configure --prefix=$(pwd) --enable-tests
 
     #
     # "Due to an intltool upstream bug, the translations for
@@ -26,11 +27,8 @@ build() {
     make -j 30
 
     # Mixer profile definitions
-    mkdir -p share/pulseaudio
-    ln -s ../../../src/modules/alsa/mixer share/pulseaudio/alsa-mixer
-
-    ln -s pacat src/paplay
-    ln -s pacat src/parec
+#    mkdir -p share/pulseaudio
+#    ln -s ../../../src/modules/alsa/mixer share/pulseaudio/alsa-mixer
 }
 
 mkdir -p $LOG_DIR

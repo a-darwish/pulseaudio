@@ -22,7 +22,7 @@ AUTOSPAWN_NO=' *autospawn *= *no *'
 # around the real PA existing at `src/.libs/pulseaudio'!
 #
 PA=src/pulseaudio
-PA_FLAGS="-n -F src/default.pa -p $(pwd)/src/ -vvvv"
+PA_FLAGS="-n -F src/default.pa -p $(pwd)/src/"
 
 run() {
 	#
@@ -41,7 +41,7 @@ run() {
 		kill $PULSE_PID
 	fi
 
-	PULSE_LOG=99 PULSE_LOG_COLORS= PULSE_LOG_META= $PA $PA_FLAGS
+	PULSE_LOG_COLORS= PULSE_LOG_META= $PA $PA_FLAGS
 }
 
 #
