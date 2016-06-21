@@ -59,12 +59,19 @@ struct pa_tagstruct {
 };
 
 PA_STATIC_FLIST_DECLARE(tagstructs, 0, pa_xfree);
+static inline pa_tagstruct *tagstruct_alloc(void) {
+    pa_tagstruct *t;
+
+    if (!(t = pa_flist_pop(PA_STATIC_FLIST_GET(tagstructs))))
+        t = pa_xnew(pa_tagstruct, 1);
+
+    return t;
+}
 
 pa_tagstruct *pa_tagstruct_new(void) {
     pa_tagstruct*t;
 
-    if (!(t = pa_flist_pop(PA_STATIC_FLIST_GET(tagstructs))))
-        t = pa_xnew(pa_tagstruct, 1);
+    t = tagstruct_alloc();
     t->data = t->per_type.appended;
     t->allocated = MAX_APPENDED_SIZE;
     t->length = t->rindex = 0;
@@ -78,8 +85,7 @@ pa_tagstruct *pa_tagstruct_new_fixed(const uint8_t* data, size_t length) {
 
     pa_assert(data && length);
 
-    if (!(t = pa_flist_pop(PA_STATIC_FLIST_GET(tagstructs))))
-        t = pa_xnew(pa_tagstruct, 1);
+    t = tagstruct_alloc();
     t->data = (uint8_t*) data;
     t->allocated = t->length = length;
     t->rindex = 0;
@@ -100,12 +106,27 @@ void pa_tagstruct_free(pa_tagstruct*t) {
 pa_tagstruct *pa_tagstruct_copy(pa_tagstruct*t) {
     pa_tagstruct*tc;
 
-    if (!(tc = pa_flist_pop(PA_STATIC_FLIST_GET(tagstructs))))
-        tc = pa_xnew(pa_tagstruct, 1);
-    tc->data = pa_xmemdup(t->data, t->length);
-    tc->allocated = t->length;
+    tc = tagstruct_alloc();
+
+    switch (t->type) {
+    case PA_TAGSTRUCT_APPENDED:
+        memcpy(tc->per_type.appended, t->per_type.appended, t->length);
+        tc->data = tc->per_type.appended;
+        tc->allocated = MAX_APPENDED_SIZE;
+        tc->type = PA_TAGSTRUCT_APPENDED;
+        break;
+    case PA_TAGSTRUCT_FIXED:
+        /* Transform fixed tagstructs to dynamic ones. We don't want
+         * to create dangling references behind the tagstruct's data
+         * original owner: it does not know of our own existence. */
+    case PA_TAGSTRUCT_DYNAMIC:
+        tc->data = pa_xmemdup(t->data, t->allocated);
+        tc->allocated = t->allocated;
+        tc->type = PA_TAGSTRUCT_DYNAMIC;
+    }
+
+    tc->length = t->length;
     tc->rindex = 0;
-    tc->type = PA_TAGSTRUCT_DYNAMIC;
 
     return tc;
 }
