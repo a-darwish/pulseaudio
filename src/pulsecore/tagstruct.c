@@ -832,3 +832,7 @@ int pa_tagstruct_get(pa_tagstruct *t, ...) {
     va_end(va);
     return ret;
 }
+
+size_t pa_tagstruct_sizeof(void) {
+    return sizeof(struct pa_tagstruct);
+}

@@ -105,4 +105,7 @@ int pa_tagstruct_get_proplist(pa_tagstruct *t, pa_proplist *p);
 int pa_tagstruct_get_volume(pa_tagstruct *t, pa_volume_t *v);
 int pa_tagstruct_get_format_info(pa_tagstruct *t, pa_format_info *f);
 
+/* Note! This is only created for tagstruct test-cases */
+size_t pa_tagstruct_sizeof(void);
+
 #endif
