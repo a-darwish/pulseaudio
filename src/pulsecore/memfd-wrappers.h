@@ -25,6 +25,21 @@
 #include <sys/syscall.h>
 #include <fcntl.h>
 
+#ifndef SYS_memfd_create
+#ifdef __x86_64__
+#define SYS_memfd_create 319
+#endif
+#ifdef __i386__
+#define SYS_memfd_create 356
+#endif
+#ifdef __sparc__
+#define SYS_memfd_create 348
+#endif
+#ifdef __ia64__
+#define SYS_memfd_create 1340
+#endif
+#endif
+
 /*
  * No glibc wrappers exist for memfd_create(2), so provide our own.
  *

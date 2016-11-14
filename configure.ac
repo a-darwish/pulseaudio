@@ -610,18 +610,7 @@ AM_ICONV
 
 #### Linux memfd_create(2) SHM support ####
 
-AC_ARG_ENABLE([memfd],
-    AS_HELP_STRING([--disable-memfd], [Disable Linux memfd shared memory]))
-
-AS_IF([test "x$enable_memfd" != "xno"],
-    AC_CHECK_DECL(SYS_memfd_create, [HAVE_MEMFD=1], [HAVE_MEMFD=0], [#include <sys/syscall.h>]),
-    [HAVE_MEMFD=0])
-
-AS_IF([test "x$enable_memfd" = "xyes" && test "x$HAVE_MEMFD" = "x0"],
-    [AC_MSG_ERROR([*** Your Linux kernel does not support memfd shared memory.
-                  *** Use linux v3.17 or higher for such a feature.])])
-
-AC_SUBST(HAVE_MEMFD)
+AC_SUBST(HAVE_MEMFD, [1])
 AM_CONDITIONAL([HAVE_MEMFD], [test "x$HAVE_MEMFD" = x1])
 AS_IF([test "x$HAVE_MEMFD" = "x1"], AC_DEFINE([HAVE_MEMFD], 1, [Have memfd shared memory.]))
 
