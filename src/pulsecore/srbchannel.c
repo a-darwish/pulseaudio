@@ -24,56 +24,10 @@
 #include "srbchannel.h"
 
 #include <pulsecore/atomic.h>
+#include <pulsecore/ringbuffer.h>
 #include <pulse/xmalloc.h>
 
 /* #define DEBUG_SRBCHANNEL */
-
-/* This ringbuffer might be useful in other contexts too, but
- * right now it's only used inside the srbchannel, so let's keep it here
- * for the time being. */
-typedef struct pa_ringbuffer pa_ringbuffer;
-
-struct pa_ringbuffer {
-    pa_atomic_t *count; /* amount of data in the buffer */
-    int capacity;
-    uint8_t *memory;
-    int readindex, writeindex;
-};
-
-static void *pa_ringbuffer_peek(pa_ringbuffer *r, int *count) {
-    int c = pa_atomic_load(r->count);
-
-    if (r->readindex + c > r->capacity)
-        *count = r->capacity - r->readindex;
-    else
-        *count = c;
-
-    return r->memory + r->readindex;
-}
-
-/* Returns true only if the buffer was completely full before the drop. */
-static bool pa_ringbuffer_drop(pa_ringbuffer *r, int count) {
-    bool b = pa_atomic_sub(r->count, count) >= r->capacity;
-
-    r->readindex += count;
-    r->readindex %= r->capacity;
-
-    return b;
-}
-
-static void *pa_ringbuffer_begin_write(pa_ringbuffer *r, int *count) {
-    int c = pa_atomic_load(r->count);
-
-    *count = PA_MIN(r->capacity - r->writeindex, r->capacity - c);
-
-    return r->memory + r->writeindex;
-}
-
-static void pa_ringbuffer_end_write(pa_ringbuffer *r, int count) {
-    pa_atomic_add(r->count, count);
-    r->writeindex += count;
-    r->writeindex %= r->capacity;
-}
 
 struct pa_srbchannel {
     pa_ringbuffer rb_read, rb_write;
