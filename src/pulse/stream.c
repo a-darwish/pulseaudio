@@ -1565,9 +1565,7 @@ int pa_stream_write_ext_free(
      * that's OK, the server side applies the same error */
     s->requested_bytes -= (seek == PA_SEEK_RELATIVE ? offset : 0) + (int64_t) length;
 
-#ifdef STREAM_DEBUG
-    pa_log_debug("wrote %lli, now at %lli", (long long) length, (long long) s->requested_bytes);
-#endif
+    pa_log_debug("wrote %lli, (requested_bytes) now at %lli", (long long) length, (long long) s->requested_bytes);
 
     if (s->direction == PA_STREAM_PLAYBACK) {
 

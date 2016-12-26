@@ -548,7 +548,7 @@ static void stdin_callback(pa_mainloop_api*a, pa_io_event *e, int fd, pa_io_even
         return;
     }
 
-    pa_log("@@STDIN callback: writable = %zu", writable);
+    pa_log("@@STDIN callback: writable = %zu; pa_stream_writable_size() = %zu", writable, pa_stream_writable_size(stream));
 
     /* Partial frame cached from a previous write iteration? */
     if (partialframe_len) {
