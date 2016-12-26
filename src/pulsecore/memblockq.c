@@ -81,6 +81,7 @@ pa_memblockq* pa_memblockq_new(
     bq->base = pa_frame_size(sample_spec);
     bq->read_index = bq->write_index = idx;
 
+    if (!strncmp(bq->name, "native protocol playback stream", strlen("native protocol playback stream")))
     pa_log_debug("memblockq requested: maxlength=%lu, tlength=%lu, base=%lu, prebuf=%lu, minreq=%lu maxrewind=%lu",
                  (unsigned long) maxlength, (unsigned long) tlength, (unsigned long) bq->base, (unsigned long) prebuf, (unsigned long) minreq, (unsigned long) maxrewind);
 
@@ -92,6 +93,7 @@ pa_memblockq* pa_memblockq_new(
     pa_memblockq_set_prebuf(bq, prebuf);
     pa_memblockq_set_maxrewind(bq, maxrewind);
 
+    if (!strncmp(bq->name, "native protocol playback stream", strlen("native protocol playback stream")))
     pa_log_debug("memblockq sanitized: maxlength=%lu, tlength=%lu, base=%lu, prebuf=%lu, minreq=%lu maxrewind=%lu",
                  (unsigned long) bq->maxlength, (unsigned long) bq->tlength, (unsigned long) bq->base, (unsigned long) bq->prebuf, (unsigned long) bq->minreq, (unsigned long) bq->maxrewind);
 
@@ -257,6 +259,7 @@ static void write_index_changed(pa_memblockq *bq, int64_t old_write_index, bool 
         bq->missing -= delta;
 
 #ifdef MEMBLOCKQ_DEBUG
+    if (!strncmp(bq->name, "native protocol playback stream", strlen("native protocol playback stream")))
      pa_log_debug("[%s] pushed/seeked %lli: requested counter at %lli, account=%i", bq->name, (long long) delta, (long long) bq->requested, account);
 #endif
 }
@@ -270,6 +273,7 @@ static void read_index_changed(pa_memblockq *bq, int64_t old_read_index) {
     bq->missing += delta;
 
 #ifdef MEMBLOCKQ_DEBUG
+    if (!strncmp(bq->name, "native protocol playback stream", strlen("native protocol playback stream")))
     pa_log_debug("[%s] popped %lli: missing counter at %lli", bq->name, (long long) delta, (long long) bq->missing);
 #endif
 }
@@ -834,6 +838,7 @@ size_t pa_memblockq_pop_missing(pa_memblockq *bq) {
     pa_assert(bq);
 
 #ifdef MEMBLOCKQ_DEBUG
+    if (!strncmp(bq->name, "native protocol playback stream", strlen("native protocol playback stream")))
     pa_log_debug("[%s] pop: %lli", bq->name, (long long) bq->missing);
 #endif
 
@@ -850,6 +855,7 @@ size_t pa_memblockq_pop_missing(pa_memblockq *bq) {
     bq->missing = 0;
 
 #ifdef MEMBLOCKQ_DEBUG
+    if (!strncmp(bq->name, "native protocol playback stream", strlen("native protocol playback stream")))
     pa_log_debug("[%s] sent %lli: request counter is at %lli", bq->name, (long long) l, (long long) bq->requested);
 #endif
 
