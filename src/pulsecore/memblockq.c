@@ -34,7 +34,7 @@
 
 #include "memblockq.h"
 
-/* #define MEMBLOCKQ_DEBUG */
+#define MEMBLOCKQ_DEBUG
 
 struct list_item {
     struct list_item *next, *prev;
