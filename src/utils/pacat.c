@@ -178,6 +178,7 @@ static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
     if (raw) {
         pa_assert(!sndfile);
 
+        pa_log("++WRITE callback: Re-enable stdin events");
         if (stdio_event)
             mainloop_api->io_enable(stdio_event, PA_IO_EVENT_INPUT);
 
@@ -535,15 +536,19 @@ static void stdin_callback(pa_mainloop_api*a, pa_io_event *e, int fd, pa_io_even
     if (!stream || pa_stream_get_state(stream) != PA_STREAM_READY ||
         !(writable = pa_stream_writable_size(stream))) {
 
+        pa_log("@@STDIN callback: Muted!");
         mainloop_api->io_enable(stdio_event, PA_IO_EVENT_NULL);
         return;
     }
 
+    writable = (size_t)-1;
     if (pa_stream_begin_write(stream, (void **)&buf, &writable) < 0) {
         pa_log(_("pa_stream_begin_write() failed: %s"), pa_strerror(pa_context_errno(context)));
         quit(1);
         return;
     }
+
+    pa_log("@@STDIN callback: writable = %zu", writable);
 
     /* Partial frame cached from a previous write iteration? */
     if (partialframe_len) {
@@ -577,13 +582,16 @@ static void stdin_callback(pa_mainloop_api*a, pa_io_event *e, int fd, pa_io_even
         memcpy(partialframe_buf, buf + towrite, partialframe_len);
 
     if (towrite) {
+        pa_log("@@STDIN callback: Writing %zu bytes to stream", towrite);
         if (pa_stream_write(stream, buf, towrite, NULL, 0, PA_SEEK_RELATIVE) < 0) {
             pa_log(_("pa_stream_write() failed: %s"), pa_strerror(pa_context_errno(context)));
             quit(1);
             return;
         }
-    } else
+    } else {
+        pa_log("@@STDIN callback: Canceling stream write!");
         pa_stream_cancel_write(stream);
+    }
 }
 
 /* Some data may be written to STDOUT */
